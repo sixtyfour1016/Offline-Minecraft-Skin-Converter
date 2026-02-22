@@ -41,6 +41,7 @@ async function resolveUuid(username) {
         `https://api.minecraftservices.com/minecraft/profile/lookup/name/${encoded}`,
         `https://api.mojang.com/users/profiles/minecraft/${encoded}`
     ];
+    let sawUpstreamError = false;
 
     for (const endpoint of lookupOrder) {
         try {
@@ -51,12 +52,13 @@ async function resolveUuid(username) {
             if (result.kind === 'not-found') {
                 continue;
             }
+            sawUpstreamError = true;
         } catch (error) {
             return { kind: 'network' };
         }
     }
 
-    return { kind: 'not-found' };
+    return sawUpstreamError ? { kind: 'upstream' } : { kind: 'not-found' };
 }
 
 function extractSkinUrl(profilePayload) {
@@ -81,8 +83,11 @@ async function fetchSkinPng(username) {
     if (uuidResult.kind === 'not-found') {
         return { kind: 'not-found' };
     }
-    if (uuidResult.kind !== 'ok') {
+    if (uuidResult.kind === 'network') {
         return { kind: 'network' };
+    }
+    if (uuidResult.kind !== 'ok') {
+        return { kind: 'upstream' };
     }
 
     const sessionUrl = `https://sessionserver.mojang.com/session/minecraft/profile/${toUndashedUuid(uuidResult.uuid)}`;
