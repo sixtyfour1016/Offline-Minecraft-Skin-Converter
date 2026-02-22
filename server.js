@@ -23,6 +23,16 @@ const MIME_TYPES = {
     '.ico': 'image/x-icon'
 };
 
+const REQUEST_HEADERS_JSON = {
+    Accept: 'application/json',
+    'User-Agent': 'Offline-Minecraft-Skin-Converter/1.0'
+};
+
+const REQUEST_HEADERS_PNG = {
+    Accept: 'image/png',
+    'User-Agent': 'Offline-Minecraft-Skin-Converter/1.0'
+};
+
 function sendJson(res, statusCode, payload) {
     const body = JSON.stringify(payload);
     res.writeHead(statusCode, {
@@ -41,13 +51,28 @@ function toUndashedUuid(uuid) {
     return String(uuid || '').replace(/-/g, '').toLowerCase();
 }
 
+function normalizeHttpsUrl(url) {
+    return String(url || '').trim().replace(/^http:\/\//i, 'https://');
+}
+
+function extractSkinUrlFromLookupProfile(profilePayload) {
+    const skins = Array.isArray(profilePayload && profilePayload.skins)
+        ? profilePayload.skins
+        : [];
+    const activeSkin = skins.find((skin) => {
+        return skin &&
+            typeof skin.url === 'string' &&
+            skin.url &&
+            String(skin.state || '').toUpperCase() === 'ACTIVE';
+    });
+    const fallbackSkin = skins.find((skin) => skin && typeof skin.url === 'string' && skin.url);
+    return normalizeHttpsUrl(activeSkin ? activeSkin.url : fallbackSkin ? fallbackSkin.url : '');
+}
+
 async function fetchJson(url) {
     const response = await fetch(url, {
         method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            'User-Agent': 'Offline-Minecraft-Skin-Converter/1.0'
-        }
+        headers: REQUEST_HEADERS_JSON
     });
 
     if (response.status === 204 || response.status === 404) {
@@ -73,7 +98,10 @@ async function resolveUuid(username) {
         try {
             const result = await fetchJson(endpoint);
             if (result.kind === 'ok' && result.data && result.data.id) {
-                return { kind: 'ok', uuid: result.data.id };
+                const skinUrl = endpoint.includes('api.minecraftservices.com')
+                    ? extractSkinUrlFromLookupProfile(result.data)
+                    : '';
+                return { kind: 'ok', uuid: result.data.id, skinUrl };
             }
             if (result.kind === 'not-found') {
                 continue;
@@ -101,7 +129,32 @@ function extractSkinUrl(profilePayload) {
     const rawUrl = parsed && parsed.textures && parsed.textures.SKIN
         ? parsed.textures.SKIN.url
         : '';
-    return String(rawUrl || '').replace(/^http:\/\//i, 'https://');
+    return normalizeHttpsUrl(rawUrl);
+}
+
+async function fetchSkinImage(skinUrl) {
+    const normalizedUrl = normalizeHttpsUrl(skinUrl);
+    if (!normalizedUrl) {
+        return { kind: 'upstream' };
+    }
+
+    try {
+        const response = await fetch(normalizedUrl, {
+            method: 'GET',
+            headers: REQUEST_HEADERS_PNG
+        });
+        if (!response.ok) {
+            return { kind: 'upstream' };
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        if (!buffer.length) {
+            return { kind: 'upstream' };
+        }
+        return { kind: 'ok', buffer };
+    } catch (error) {
+        return { kind: 'network' };
+    }
 }
 
 async function fetchSkinPng(username) {
@@ -114,6 +167,13 @@ async function fetchSkinPng(username) {
     }
     if (uuidResult.kind !== 'ok') {
         return { kind: 'upstream' };
+    }
+
+    if (uuidResult.skinUrl) {
+        const directSkinResult = await fetchSkinImage(uuidResult.skinUrl);
+        if (directSkinResult.kind === 'ok' || directSkinResult.kind === 'network') {
+            return directSkinResult;
+        }
     }
 
     const sessionUrl = `https://sessionserver.mojang.com/session/minecraft/profile/${toUndashedUuid(uuidResult.uuid)}`;
@@ -135,22 +195,7 @@ async function fetchSkinPng(username) {
         return { kind: 'upstream' };
     }
 
-    try {
-        const response = await fetch(skinUrl, {
-            method: 'GET',
-            headers: {
-                Accept: 'image/png',
-                'User-Agent': 'Offline-Minecraft-Skin-Converter/1.0'
-            }
-        });
-        if (!response.ok) {
-            return { kind: 'upstream' };
-        }
-        const arrayBuffer = await response.arrayBuffer();
-        return { kind: 'ok', buffer: Buffer.from(arrayBuffer) };
-    } catch (error) {
-        return { kind: 'network' };
-    }
+    return fetchSkinImage(skinUrl);
 }
 
 function sendStaticFile(req, res, requestPath) {
