@@ -1,0 +1,342 @@
+/* =======================================================
+   Minecraft Font and GUI Variables
+   ======================================================= */
+
+@font-face {
+    font-family: 'Minecraft Font';
+    src: url('assets/fonts/minecraft_font.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root { 
+    --radius: 0; 
+    --transition: 0s; 
+    
+    /* Classic GUI Colors (Fixed Dark Mode) */
+    --mc-window-bg: #353535;
+    --mc-text-color: #E0E0E0;
+    --mc-text-outline: #000000;
+    --mc-highlight-bg: #4C4C4C; 
+    --mc-panel-border-dark: #000000;
+    --mc-panel-border-light: #D0D0D0;
+    
+    /* Default Button Style */
+    --mc-btn-bg: #5D5D5D;
+    --mc-btn-border-dark: #565656;
+    --mc-btn-border-light: #AAA;
+    --mc-btn-hover-border-dark: #59639A;
+    --mc-btn-hover-border-light: #BDC6FF;
+
+    /* Accent Colors */
+    --mc-accent-color: #3CB055;
+    --mc-danger-color: #FF5454; 
+    
+}
+
+/* =======================================================
+   Base Styles
+   ======================================================= */
+* { box-sizing: border-box; }
+body {
+    font-family: 'Minecraft Font', 'Press Start 2P', monospace;
+    background-color: #1A1A1A; 
+    color: var(--mc-text-color); 
+    margin: 0;
+    display: flex; align-items: center; justify-content: center; min-height: 100vh;
+    text-rendering: optimizeSpeed; 
+}
+
+#game-screen-bg {
+    background-image: url('assets/images/dirty_bg.png'); 
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    width: 100%;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.pixel-text { font-family: 'Minecraft Font', 'Press Start 2P', monospace; }
+.text-shadow { text-shadow: 2px 2px 0 var(--mc-text-outline); color: var(--mc-text-color); }
+.text-shadow-large { text-shadow: 4px 4px 0 var(--mc-text-outline); color: var(--mc-text-color); }
+
+/* =======================================================
+   Main Window (GUI)
+   ======================================================= */
+#gui-window {
+    width: 95%;
+    max-width: 500px;
+    padding: 16px;
+    border: 4px solid var(--mc-panel-border-dark); 
+    box-shadow: 
+        4px 4px 0 0 var(--mc-panel-border-light),
+        -4px -4px 0 0 var(--mc-panel-border-light),
+        4px -4px 0 0 var(--mc-panel-border-light),
+        -4px 4px 0 0 var(--mc-panel-border-light); 
+    
+    background: rgba(32, 32, 32, 0.8); 
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Inner Panel/Card */
+.mc-panel {
+    background: var(--mc-window-bg);
+    padding: 16px;
+    border: 2px solid;
+    border-color: var(--mc-panel-border-light) var(--mc-panel-border-dark) var(--mc-panel-border-dark) var(--mc-panel-border-light);
+}
+
+/* Drop and Preview Area */
+#drop-area, #loaded-state { text-align: center; }
+
+/* Content alignment in Loaded Skin screen */
+#loaded-state { 
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+    gap: 12px;
+}
+
+#drop-area {
+    cursor: pointer;
+    padding: 40px 20px;
+    border: 2px dashed var(--mc-panel-border-dark); 
+    display: block; 
+}
+#drop-area.highlight { 
+    background-color: rgba(0, 170, 0, 0.2); 
+    border-color: var(--mc-accent-color);
+}
+
+/* =======================================================
+   Buttons and Selects
+   ======================================================= */
+.mc-btn, .mc-select {
+    font-family: 'Minecraft Font', 'Press Start 2P', monospace;
+    cursor: pointer;
+    text-shadow: 2px 2px 0 var(--mc-text-outline);
+    color: var(--mc-text-color);
+    padding: 8px 16px;
+    border-width: 2px;
+    
+    /* Center text correctly */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    
+    background-image: linear-gradient(180deg, #6D6D6D 0%, #585858 100%);
+    background-color: var(--mc-btn-bg); 
+    background-repeat: no-repeat; 
+    background-size: cover;
+    
+    border-style: solid;
+    border-color: var(--mc-btn-border-light) var(--mc-btn-border-dark) var(--mc-btn-border-dark) var(--mc-btn-border-light); 
+}
+
+.mc-btn:hover, .mc-select:hover, #drop-area:hover { 
+    background-position: 0 -15px; 
+    border-color: var(--mc-btn-hover-border-light) var(--mc-btn-hover-border-dark) var(--mc-btn-hover-border-dark) var(--mc-btn-hover-light); 
+}
+.mc-btn:active, .mc-select:active, #drop-area:active { 
+    border-color: var(--mc-btn-hover-border-dark) var(--mc-btn-hover-border-light) var(--mc-btn-hover-border-light) var(--mc-btn-hover-border-dark); 
+    transform: translateY(1px); 
+}
+
+.mc-btn-download { background-color: var(--mc-accent-color); }
+.mc-btn-remove { background-color: var(--mc-danger-color); }
+
+.mc-text-input {
+    font-family: 'Minecraft Font', 'Press Start 2P', monospace;
+    color: var(--mc-text-color);
+    background-color: #1f1f1f;
+    border: 2px solid;
+    border-color: var(--mc-panel-border-light) var(--mc-panel-border-dark) var(--mc-panel-border-dark) var(--mc-panel-border-light);
+    padding: 8px 10px;
+    width: 100%;
+}
+
+.mc-text-input:focus-visible {
+    outline: 2px solid var(--mc-accent-color);
+    outline-offset: 1px;
+}
+
+/* Language Select */
+.mc-select { 
+    -webkit-appearance: none; appearance: none;
+    padding: 8px 16px;
+    height: auto;
+    line-height: normal;
+}
+
+#version-select {
+    width: 100%;
+}
+
+.username-load-section {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.username-load-controls {
+    display: flex;
+    gap: 8px;
+}
+
+#username-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#load-skin-btn {
+    width: 132px;
+}
+
+.username-feedback {
+    margin: 0;
+    min-height: 17px;
+}
+
+.username-feedback.is-loading {
+    color: var(--mc-text-color);
+}
+
+.username-feedback.is-success {
+    color: #55ff55;
+}
+
+.username-feedback.is-error {
+    color: var(--mc-danger-color);
+}
+
+.download-pack-btn {
+    width: 100%;
+    margin-top: 8px;
+}
+
+@media (max-width: 520px) {
+    .username-load-controls {
+        flex-direction: column;
+    }
+
+    #load-skin-btn {
+        width: 100%;
+    }
+}
+
+/* Details / How To Use / Structure */
+.details-content, .privacy-content {
+    font-size: 12px; color: #E0E0E0; text-shadow: none; line-height: 1.4;
+}
+
+/* NEW: Instruction list item style (pixelated marker) */
+.how-to-item {
+    font-size: 12px; 
+    color: #E0E0E0; 
+    text-shadow: none; 
+    line-height: 1.4;
+    padding-left: 12px; 
+    position: relative;
+}
+
+/* The pixelated marker */
+.how-to-item::before {
+    content: "■"; 
+    color: var(--mc-text-color); 
+    font-size: 10px; 
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Details Titles */
+.details-title {
+    font-size: 14px; margin-top:0;
+}
+
+/* ZIP STRUCTURE */
+#zip-structure-code {
+    background:#1A1A1A; 
+    padding:10px; 
+    margin: 5px 0;
+    border: 1px solid #000; 
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Footer Link */
+.mc-link { 
+    color: var(--mc-text-color); 
+    text-shadow: 1px 1px 0 var(--mc-text-outline); 
+    text-decoration: none; 
+    font-size: 10px;
+}
+
+/* =======================================================
+   Modal Styles (Privacy and Secret Feature)
+   ======================================================= */
+.privacy-modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex; align-items: center; justify-content: center;
+}
+
+.modal-inner {
+    position: relative; 
+    width: 90%; 
+    max-width: 480px; 
+    padding: 16px;
+    border: 4px solid var(--mc-panel-border-dark); 
+    box-shadow: 
+        4px 4px 0 0 var(--mc-panel-border-light),
+        -4px -4px 0 0 var(--mc-panel-border-light),
+        4px -4px 0 0 var(--mc-panel-border-light),
+        -4px 4px 0 0 var(--mc-panel-border-light); 
+    background: var(--mc-window-bg); 
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto; 
+}
+
+/* =======================================================
+   NEW: Error Toast / Achievement Warning
+   ======================================================= */
+#error-toast {
+    position: fixed; 
+    top: -100px; 
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    width: 90%;
+    max-width: 400px; 
+    padding: 10px 16px;
+    
+    border: 4px solid var(--mc-panel-border-dark); 
+    box-shadow: 
+        4px 4px 0 0 var(--mc-panel-border-light),
+        -4px -4px 0 0 var(--mc-panel-border-light),
+        4px -4px 0 0 var(--mc-panel-border-light),
+        -4px 4px 0 0 var(--mc-panel-border-light); 
+    background: var(--mc-window-bg); 
+}
+
+@keyframes slide-in {
+    0% { top: -100px; }
+    10% { top: 10px; } 
+    90% { top: 10px; }
+    100% { top: -100px; }
+}
+
+.toast-show {
+    animation: slide-in 3.5s ease-in-out forwards; 
+}
+    

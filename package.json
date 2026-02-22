@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A tool that converts a 64x64 Minecraft skin into a resource pack to replace the default game skins.",
   "scripts": {
+    "start": "node server.js",
     "deploy": "gh-pages -d ."
   },
   "keywords": [
