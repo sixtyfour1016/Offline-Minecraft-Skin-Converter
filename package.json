@@ -4,7 +4,8 @@
   "description": "A tool that converts a 64x64 Minecraft skin into a resource pack to replace the default game skins.",
   "scripts": {
     "start": "node server.js",
-    "deploy": "gh-pages -d ."
+    "dev": "npx wrangler pages dev .",
+    "deploy": "npx wrangler pages deploy . --project-name offline-minecraft-skin-converter"
   },
   "keywords": [
     "minecraft",
@@ -13,8 +14,5 @@
     "offline"
   ],
   "author": "1337rod",
-  "license": "ISC",
-  "dependencies": {
-    "gh-pages": "^6.1.1"
-  }
+  "license": "ISC"
 }

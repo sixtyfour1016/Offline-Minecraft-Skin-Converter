@@ -24,6 +24,11 @@ Maintain and extend the Offline Minecraft Skin Converter while keeping behavior 
 - `app.js`
   - Runtime behavior and event wiring.
   - Zip generation and state management.
+- `functions/api/skin.js`
+  - Cloudflare Pages Function for `GET /api/skin`.
+  - Resolves username -> Mojang skin PNG.
+- `wrangler.toml`
+  - Cloudflare Pages deployment configuration.
 
 ## Core Product Rules
 
@@ -48,14 +53,14 @@ Do not emit both shapes at once.
 These were original owner requests and should be treated as primary backlog:
 
 1. Version selector metadata audit/finalization.
-2. Cloudflare Pages/Workers migration from GitHub Pages.
 
 Completed roadmap items:
 
 - Username-based skin fetch path.
 - Generate `pack.png` from skin face (with hat layer overlay).
+- Cloudflare Pages/Workers migration from GitHub Pages.
 
-Detailed copy-paste prompts live in `README.md`.
+Detailed copy-paste prompts live in `readme.md`.
 
 ## Safe Editing Guidelines
 
@@ -76,6 +81,7 @@ Run these checks after JS edits:
 node --check app.dom.js
 node --check app.data.js
 node --check app.js
+node --check functions/api/skin.js
 ```
 
 Manual smoke test:
@@ -89,19 +95,18 @@ Manual smoke test:
 
 ## Deployment Notes
 
-Current `package.json` still contains GitHub Pages deployment settings and should be replaced during Cloudflare migration.
+Cloudflare deployment is configured with Wrangler + Pages Functions.
 
-When implementing Cloudflare deployment:
-
-- keep static site deployment simple
-- isolate API logic (if added) behind clear endpoint(s)
-- document environment setup in `README.md`
+- `wrangler.toml` defines `name`, compatibility date, and output dir (`.`).
+- `package.json` contains Wrangler scripts for local Pages dev and deploy.
+- Keep static deployment simple and isolate API logic in `functions/api/`.
+- Keep environment/setup docs in `readme.md` in sync with scripts/config.
 
 ## Handoff Expectations
 
 If you complete a roadmap item, update:
 
-- `README.md` status section
+- `readme.md` status section
 - this `AGENTS.md` roadmap/checklist if behavior or architecture changed
 
 Include exact changed files and validation results in your final summary.

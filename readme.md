@@ -11,6 +11,9 @@ All pack generation runs client-side in the browser.
 - `app.dom.js`: centralized DOM element references.
 - `app.data.js`: static data (version map, translations, skin target names).
 - `app.js`: app behavior, pack generation logic, event wiring.
+- `functions/api/skin.js`: Cloudflare Pages Function for username-to-skin PNG lookup.
+- `wrangler.toml`: Cloudflare Pages deployment config.
+- `server.js`: optional Node dev server (legacy/local fallback).
 - `assets/`: fonts, audio, image assets.
 
 ## Current Feature Status
@@ -24,6 +27,7 @@ All pack generation runs client-side in the browser.
 - Frontend refactor from single-file HTML to modular files: implemented.
 - Username-based skin lookup (`GET /api/skin?username=<name>`): implemented.
 - `pack.png` generated from skin face (base + hat overlay): implemented.
+- Cloudflare Pages + Pages Functions deployment path: implemented.
 
 ## Original Requested Changes
 
@@ -32,7 +36,38 @@ The original request had 4 changes:
 1. Pick Minecraft version for the pack.
 2. `pack.png` should be the skin face. (implemented)
 3. Fetch skin by Minecraft username. (implemented)
-4. Deploy on Cloudflare Pages/Workers instead of GitHub Pages.
+4. Deploy on Cloudflare Pages/Workers instead of GitHub Pages. (implemented)
+
+## Cloudflare Deployment
+
+Required secrets/environment variables:
+
+- None for current functionality.
+
+Runtime routes:
+
+- Static frontend: served from project root (`.`).
+- API endpoint: `GET /api/skin?username=<name>` from `functions/api/skin.js`.
+
+One-time setup:
+
+1. Install dependencies: `npm install`
+2. Authenticate Wrangler: `npx wrangler login`
+3. Create a Cloudflare Pages project named `offline-minecraft-skin-converter` (or update `name` in `wrangler.toml` and the deploy script in `package.json` to your project name).
+
+Local Cloudflare-compatible dev:
+
+```powershell
+npm run dev
+```
+
+Deploy to Cloudflare Pages:
+
+```powershell
+npm run deploy
+```
+
+This repo has no build step; the deploy target is the repository root.
 
 ## Prompt Pack For A Fresh Agent
 
@@ -141,30 +176,27 @@ Acceptance criteria:
 - Errors are graceful for unknown usernames, network failures, and invalid responses.
 ```
 
-### Prompt 4: Cloudflare Pages/Workers Deployment Migration
+### Prompt 4: Cloudflare Pages/Workers Deployment Maintenance
 
 ```text
-Task: Replace GitHub Pages deployment setup with Cloudflare Pages/Workers deployment.
+Task: Audit and maintain Cloudflare Pages/Workers deployment setup.
 
 Repository context:
-- Project is static frontend + optional future API endpoint for username lookup.
-- Existing `package.json` deploy script still targets GitHub Pages.
+- Project is static frontend + Cloudflare Pages Function endpoint for username lookup.
+- Current deployment uses Wrangler.
 
 Requirements:
-1) Remove GitHub Pages-specific deployment dependency/scripts.
-2) Add Cloudflare deployment configuration:
-   - Static site deployment to Pages.
-   - If username lookup API is included, add Workers or Pages Functions setup.
-3) Add npm scripts for local preview/dev and deploy (using Wrangler).
-4) Update docs with exact setup steps:
+1) Keep Cloudflare deployment scripts/config current (`wrangler.toml`, npm scripts).
+2) Verify static site and `/api/skin` endpoint still deploy together.
+3) Update docs with exact setup steps:
    - required env vars/secrets
    - build/deploy commands
    - routes/endpoints
-5) Ensure deployment path works with this repository layout (no bundler required unless introduced intentionally).
+4) Ensure deployment path works with this repository layout (no bundler required unless introduced intentionally).
 
 Acceptance criteria:
 - Repo can be deployed to Cloudflare Pages.
-- Optional API endpoint is deployable on Cloudflare and reachable from frontend.
+- API endpoint is deployable on Cloudflare and reachable from frontend.
 - README instructions are complete enough for a first-time deploy.
 ```
 
@@ -191,15 +223,21 @@ Deliverables:
 
 ## Local Development
 
-This project is static and can be opened directly in a browser, but a local static server is recommended.
+Preferred local modes:
 
-Example (PowerShell with Node installed):
+1) Cloudflare-compatible local runtime (static + Pages Functions):
 
 ```powershell
-npx serve .
+npm run dev
 ```
 
-Then open the local URL and test upload/download flows.
+2) Node fallback runtime (`server.js`, mirrors `/api/skin` behavior):
+
+```powershell
+npm start
+```
+
+Opening `index.html` directly with the `file://` protocol is still possible for upload/download, but username lookup requires a server runtime.
 
 ## Notes
 
